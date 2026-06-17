@@ -3,6 +3,7 @@ from fastapi import FastAPI, Request, HTTPException
 from pydantic import BaseModel
 from ollama import chat
 from .database import llm_logs_collection
+from .utils import load_context 
 
 app = FastAPI(title="FastAPI Aggregator Service", version="1.0.0")
 
@@ -17,11 +18,21 @@ def read_root():
 async def chat_with_gemma(request: LlmRequest):
     
     request_dump = request.model_dump()
+
+    context = load_context()
     
 
     response = chat(
         model="gemma3:1b",
         messages=[
+            {
+                "role": "system",
+                "content": f"""
+You are an assistant. Use this context to answer user questions:
+
+{context}
+"""
+            },
             {
                 "role": "user",
                 "content": request.message
