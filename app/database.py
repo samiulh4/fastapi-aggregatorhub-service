@@ -6,3 +6,4 @@ client = AsyncIOMotorClient(MONGO_URL)
 db = client["mongo_aggregatorhub"]
 
 llm_logs_collection = db["llm_logs"]
+areas_collection = db["areas"]

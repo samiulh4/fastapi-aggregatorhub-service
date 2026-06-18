@@ -4,8 +4,13 @@ from pydantic import BaseModel
 from ollama import chat
 from .database import llm_logs_collection
 from .utils import load_context 
+import json
+
+from .routes import area
 
 app = FastAPI(title="FastAPI Aggregator Service", version="1.0.0")
+
+app.include_router(area.router)
 
 class LlmRequest(BaseModel):
     message: str
@@ -41,7 +46,7 @@ You are an assistant. Use this context to answer user questions:
     )
 
     result = await llm_logs_collection.insert_one({
-        "request": request_dump,
+        "request": json.dumps(request_dump),
         "response": response["message"]["content"],
         "model": "gemma3:1b"
     })
