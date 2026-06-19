@@ -33,10 +33,8 @@ async def chat_with_gemma(request: LlmRequest):
             {
                 "role": "system",
                 "content": f"""
-You are an assistant. Use this context to answer user questions:
-
-{context}
-"""
+                You are an assistant. Use this context to answer user questions:
+                {context} """
             },
             {
                 "role": "user",
