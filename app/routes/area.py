@@ -61,17 +61,82 @@ async def get_area():
         "message": f"Inserted {len(districts)} districts, {len(upazilas)} upazilas, and {len(unions)} unions"
     }
 
+# @router.get("/area/update")
+# async def update_area():
+#     result_data = []
+#     updated_count = 0
+
+#     query = {"area_type": "upazila"}
+#     cursor = areas_collection.find(query)
+
+#     async for document in cursor:
+
+#         if document.get("area_parent_id") is None:
+
+#             parent_query = {
+#                 "area_type": "district",
+#                 "district_id": document.get("district_id")
+#             }
+
+#             parent_data = await areas_collection.find_one(parent_query)
+
+#             if parent_data:
+#                 await areas_collection.update_one(
+#                     {"_id": document["_id"]},
+#                     {"$set": {"area_parent_id": parent_data["_id"]}}
+#                 )
+#                 updated_count += 1
+
+#                 document["area_parent_id"] = parent_data["_id"]
+
+#         document["_id"] = str(document["_id"])
+
+#         if document.get("area_parent_id"):
+#             document["area_parent_id"] = str(document["area_parent_id"])
+
+#         result_data.append(document)
+
+#     return {
+#         "updated_count": updated_count,
+#         "data": result_data
+#     } 
+
 @router.get("/area/update")
 async def update_area():
-    query = {"area_type": "upazila"}
-    
+    result_data = []
+    updated_count = 0
+
+    query = {"area_type": "union"}
     cursor = areas_collection.find(query)
-    
-    data = []
+
     async for document in cursor:
-        document["_id"] = str(document["_id"]) 
-        data.append(document)
-    
+
+        if document.get("area_parent_id") is None:
+
+            parent_query = {
+                "area_type": "upazila",
+                "upozila_id": document.get("upozila_id")
+            }
+
+            parent_data = await areas_collection.find_one(parent_query)
+
+            if parent_data:
+                await areas_collection.update_one(
+                    {"_id": document["_id"]},
+                    {"$set": {"area_parent_id": parent_data["_id"]}}
+                )
+                updated_count += 1
+
+                document["area_parent_id"] = parent_data["_id"]
+
+        document["_id"] = str(document["_id"])
+
+        if document.get("area_parent_id"):
+            document["area_parent_id"] = str(document["area_parent_id"])
+
+        result_data.append(document)
+
     return {
-        "data": data
-    }    
+        "updated_count": updated_count,
+        "data": result_data
+    } 
