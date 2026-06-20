@@ -7,3 +7,5 @@ db = client["mongo_aggregatorhub"]
 
 llm_logs_collection = db["llm_logs"]
 areas_collection = db["areas"]
+
+__all__ = ["client", "db", "llm_logs_collection", "areas_collection"]
