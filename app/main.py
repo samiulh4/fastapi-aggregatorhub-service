@@ -1,17 +1,20 @@
 import uvicorn
 from fastapi import FastAPI, Request, HTTPException
 from pydantic import BaseModel
-from ollama import chat
+from ollama import Client
 from .database import llm_logs_collection
-from .utils import load_context 
+from .utils import load_context, load_message 
 import json
 
 from .routes import area
+from .routes import chat
 
 app = FastAPI(title="FastAPI Aggregator Service", version="1.0.0")
 
 app.include_router(area.router)
+app.include_router(chat.router)
 
+client = Client(host="http://localhost:11434")
 class LlmRequest(BaseModel):
     message: str
 
@@ -24,23 +27,22 @@ async def chat_with_gemma(request: LlmRequest):
     
     request_dump = request.model_dump()
 
+    messages = []
     context = load_context()
+    histories = load_message()
+    messages.append({
+        "role": "system",
+        "content": f"Answer using this context:\n{context}"
+    })
+    messages.extend(histories)
+    messages.append({
+        "role": "user",
+        "content": request.message
+    })
     
-
-    response = chat(
+    response = client.chat(
         model="gemma3:1b",
-        messages=[
-            {
-                "role": "system",
-                "content": f"""
-                You are an assistant. Use this context to answer user questions:
-                {context} """
-            },
-            {
-                "role": "user",
-                "content": request.message
-            }
-        ]
+        messages=messages
     )
 
     result = await llm_logs_collection.insert_one({
